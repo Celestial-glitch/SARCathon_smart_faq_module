@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart FAQ Module</title>
+
+  <!-- Link to the external CSS file -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+  <div class="container">
+    <h1>Smart FAQ Module</h1>
+
+    <input type="text" id="query" placeholder="Enter your question...">
+    <button class="search-btn" onclick="searchFAQ()">Search</button>
+
+    <div id="response"></div>
+  </div>
+
+  <script>
+    async function searchFAQ() {
+      const query = document.getElementById('query').value;
+      console.log(`Searching for: ${query}`);  // Corrected template literal
+
+      const response = await fetch('http://127.0.0.1:5000/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+      });
+
+      if (!response.ok) {
+        console.error('Network response was not ok');
+        document.getElementById('response').innerHTML = 
+          '<p style="color:red;">Error fetching data. Please try again.</p>'; // Use single quotes for HTML string
+        return;
+      }
+
+      const data = await response.json();
+      console.log('Response received:', data);  // Debug output
+
+      // Display matching FAQs
+      let responseHTML = '';
+      if (Array.isArray(data) && data.length > 0) {
+        data.forEach(faq => {
+          responseHTML += `
+            <div class="faq">
+              <h3>${faq.question}</h3>
+              <p>${faq.answer}</p>
+            </div>`;
+        });
+      } else {
+        responseHTML = '<p>No matching FAQs found.</p>'; // Use single quotes for HTML string
+      }
+
+      document.getElementById('response').innerHTML = responseHTML;
+    }
+  </script>
+
+</body>
+</html>
+
